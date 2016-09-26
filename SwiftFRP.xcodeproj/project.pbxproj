@@ -21,6 +21,8 @@
 		48E759821D99B03300758F3F /* SwiftFRPJoinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E759801D99B03300758F3F /* SwiftFRPJoinTests.swift */; };
 		48E759831D99B03300758F3F /* SwiftFRPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E759811D99B03300758F3F /* SwiftFRPTests.swift */; };
 		48E7599B1D99B05D00758F3F /* SwiftCheck.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48E759921D99B04900758F3F /* SwiftCheck.framework */; };
+		48E759A41D99B2AA00758F3F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 48E759A21D99B2AA00758F3F /* LICENSE */; };
+		48E759A51D99B2AA00758F3F /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 48E759A31D99B2AA00758F3F /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +103,8 @@
 		48E759801D99B03300758F3F /* SwiftFRPJoinTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftFRPJoinTests.swift; sourceTree = "<group>"; };
 		48E759811D99B03300758F3F /* SwiftFRPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftFRPTests.swift; sourceTree = "<group>"; };
 		48E759841D99B04800758F3F /* SwiftCheck.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftCheck.xcodeproj; path = SwiftCheck/SwiftCheck.xcodeproj; sourceTree = "<group>"; };
+		48E759A21D99B2AA00758F3F /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		48E759A31D99B2AA00758F3F /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +130,8 @@
 		48E759331D99AE9000758F3F = {
 			isa = PBXGroup;
 			children = (
+				48E759A21D99B2AA00758F3F /* LICENSE */,
+				48E759A31D99B2AA00758F3F /* README.md */,
 				48E7593F1D99AE9000758F3F /* SwiftFRP */,
 				48E7594A1D99AE9000758F3F /* SwiftFRPTests */,
 				48E7593E1D99AE9000758F3F /* Products */,
@@ -331,6 +337,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48E759A41D99B2AA00758F3F /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +357,7 @@
 			files = (
 				48E7597A1D99B01F00758F3F /* KeyedSet.swift in Sources */,
 				48E759781D99B01F00758F3F /* Combine.swift in Sources */,
+				48E759A51D99B2AA00758F3F /* README.md in Sources */,
 				48E759791D99B01F00758F3F /* Join.swift in Sources */,
 				48E759761D99B01F00758F3F /* Booleans.swift in Sources */,
 				48E7597C1D99B01F00758F3F /* Sequences.swift in Sources */,
