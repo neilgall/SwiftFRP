@@ -2,8 +2,8 @@
 //  SwiftFRP.h
 //  SwiftFRP
 //
-//  Created by Neil (personal) on 26/09/2016.
-//  Copyright © 2016 Neil (personal). All rights reserved.
+//  Created by Neil Gall on 26/09/2016.
+//  Copyright © 2016 Neil Gall. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
