@@ -26,7 +26,8 @@ This idea is so cental, the framework defines a special symmetrical syntax for i
 ```swift
     let x = Input<Int>(initial: 0)
     ...
-    x <--- 3```
+    x <--- 3
+```
 
 Likewise, an `Output` can be created on a `Signal using `-->`:
 
@@ -35,7 +36,8 @@ Likewise, an `Output` can be created on a `Signal using `-->`:
     ...
     let receiver = y --> { (value: Int) in
         print("\(value)")
-    }```
+    }
+```
 
 ## Transformations
 
@@ -47,7 +49,8 @@ The above sounds like elaborate plumbing and not much more. The real power in th
     let receiver = y --> { print($0) }
     x <-- 3
     x <-- 4
-    x <-- 5```
+    x <-- 5
+```
 
 The above prints 9, 12 and 15. 
 
@@ -57,7 +60,8 @@ The above prints 9, 12 and 15.
     let receiver = y --> { print($0) }
     x <-- 3
     x <-- 4
-    x <-- 7```
+    x <-- 7
+```
 
 This prints 3 and 4.
 
@@ -72,7 +76,8 @@ Sometimes a calculation requires more than one input, and this is where _Combine
 ```swift
     let x = Input<Int>(initial: 0)
     let y = Input<Int>(initial: 0)
-    let z = combine(x, y) { $0 + $1 }```
+    let z = combine(x, y) { $0 + $1 }
+```
 
 In the above case, x and y are separate inputs so each change to either of them will result in a new output form the combined signal. What if `x` and `y` have some dependency relationship however?
 
@@ -80,7 +85,8 @@ In the above case, x and y are separate inputs so each change to either of them 
     let w = Input<Int>(initial: 0)
     let x = w.map { $0 + 2 }
     let y = w.map { $0 - 9 }.filter { $0 < 5 }
-    let z = combine(x, y) { $0 + $1 }```
+    let z = combine(x, y) { $0 + $1 }
+```
 
 On a change to `w`, we want all the dependent signals to change just once, and combiners provide exactly this property. `z` will either output a single value in response to an input on `w`, or nothing at all if the filter on `y` is not satisfied.
 
@@ -92,13 +98,15 @@ There are some combinators which only apply for some data types in filters. Bool
     let x = Signal<Bool>
     let y = Signal<Bool>
     let x_and_y = x && y
-    let neither_x_nor_y = not(x || y)```
+    let neither_x_nor_y = not(x || y)
+```
 
 `onRisingEdge` and `onFallingEdge` implement a simple boolean edge detection, invoking a parameterless function in each case.
 
 ```swift
     let x = Signal<Bool>
-    let receiver = x.onRisingEdge { print("x went from false to true") }```
+    let receiver = x.onRisingEdge { print("x went from false to true") }
+```
 
 ## Gates
 
@@ -107,7 +115,8 @@ A final type of combinator is a gate, which prevents propagation of some other s
 ```swift
     let uiStuff = Signal<UIStuff>
     let animating = Signal<Bool>
-    let receiver = animating.gate(uiStuff) { updateUI($0) }```
+    let receiver = animating.gate(uiStuff) { updateUI($0) }
+```
 
 Bracket animations with `animating <-- true` and `animating <-- false`, and regardless of then `uiStuff` is updated, the call to `updateUI()` happens with the latest values only after the animation has finished.
 
