@@ -1,0 +1,3 @@
+[submodule "SwiftFRPTests/SwiftCheck"]
+	path = SwiftFRPTests/SwiftCheck
+	url = git@github.com:typelift/SwiftCheck.git
