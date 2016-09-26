@@ -67,11 +67,11 @@ This prints 3 and 4.
 
 Both `y`s above are also `Signal`s, so further operations could be applied to these objects. Note that the result of `map` will provide a computed `latestValue`, invoking the transformation function each time it is accessed. If this is expensive, wrap a mapped signal in a call to `latest()` to turn it into a `Signal` which caches a copy of every value that propagates through it.
 
-`union` takes a number of signals of the same type and yields a singla signal which outputs the value from any of the source signals. `onChange` yields a signal which only propagates changes in the signal value. `notNil` turns a signal of optional type into a non-optional type by filtering out any `nil` value.
+`union` takes a number of signals of the same type and yields a single signal which outputs the value from any of the source signals. `onChange` yields a signal which only propagates changes in the signal value. `notNil` turns a signal of optional type into a non-optional type by filtering out any `nil` value.
 
 ## Combiners
 
-Sometimes a calculation requires more than one input, and this is where _Combiners_ come in. Like `map`, `combine` takes a number of `Signal` parameters and a combining function which receives a value from each signal as a parameter. Overloads of `combine` are provided up to six parameters. The following creates a signal which is always the addition of `x` and `y`:
+Sometimes a calculation requires more than one input, and this is where _Combiners_ come in. `combine` takes a number of `Signal` parameters and a combining function which receives a value from each signal as a parameter. Overloads of `combine` are provided up to six parameters. The following creates a signal which is always the addition of `x` and `y`:
 
 ```swift
     let x = Input<Int>(initial: 0)
@@ -118,7 +118,7 @@ A final type of combinator is a gate, which prevents propagation of some other s
     let receiver = animating.gate(uiStuff) { updateUI($0) }
 ```
 
-Bracket animations with `animating <-- true` and `animating <-- false`, and regardless of then `uiStuff` is updated, the call to `updateUI()` happens with the latest values only after the animation has finished.
+Bracket animations with `animating <-- true` and `animating <-- false`, and regardless of when `uiStuff` is updated, the call to `updateUI()` happens with the latest values only after the animation has finished.
 
 ## Transactions
 
