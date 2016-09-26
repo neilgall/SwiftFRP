@@ -1,6 +1,6 @@
 //
 //  Join.swift
-//  ScotTraffic
+//  SwiftFRP
 //
 //  Created by Neil Gall on 04/01/2016.
 //  Copyright © 2016 Neil Gall. All rights reserved.
