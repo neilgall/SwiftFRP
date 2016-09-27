@@ -18,28 +18,28 @@ class Combiner<Value>: Signal<Value> {
     private var needsUpdate: Bool = false
     var receivers: [ReceiverType] = []
 
-    func update<S>(transaction: Transaction<S>) {
+    func update<S>(_ transaction: Transaction<S>) {
         switch transaction {
-        case .Begin:
+        case .begin:
             if transactionCount == 0 {
-                self.pushTransaction(.Begin)
+                self.pushTransaction(.begin)
                 needsUpdate = false
             }
             transactionCount += 1
             
-        case .End:
+        case .end:
             needsUpdate = true
             fallthrough
             
-        case .Cancel:
+        case .cancel:
             assert(transactionCount > 0)
             transactionCount -= 1
             if transactionCount == 0 {
                 if needsUpdate, let value = latestValue.get {
-                    pushTransaction(.End(value))
+                    pushTransaction(.end(value))
                     needsUpdate = false
                 } else {
-                    pushTransaction(.Cancel)
+                    pushTransaction(.cancel)
                 }
             }
         }
@@ -53,7 +53,7 @@ class Combine2<Source1: SignalType, Source2: SignalType, CombinedType> : Combine
     let latest1: Signal<Source1.ValueType>
     let latest2: Signal<Source2.ValueType>
     
-    init(_ s1: Source1, _ s2: Source2, combine: CombineFunction) {
+    init(_ s1: Source1, _ s2: Source2, combine: @escaping CombineFunction) {
         self.combine = combine
         latest1 = s1.latest()
         latest2 = s2.latest()
@@ -63,10 +63,10 @@ class Combine2<Source1: SignalType, Source2: SignalType, CombinedType> : Combine
     }
     
     override var latestValue: LatestValue<CombinedType> {
-        guard let t1 = latest1.latestValue.get, t2 = latest2.latestValue.get else {
-            return .None
+        guard let t1 = latest1.latestValue.get, let t2 = latest2.latestValue.get else {
+            return .none
         }
-        return .Computed({ self.combine(t1, t2) })
+        return .computed({ self.combine(t1, t2) })
     }
 }
 
@@ -78,7 +78,7 @@ class Combine3<Source1: SignalType, Source2: SignalType, Source3: SignalType, Co
     let latest2: Signal<Source2.ValueType>
     let latest3: Signal<Source3.ValueType>
     
-    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, combine: CombineFunction) {
+    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, combine: @escaping CombineFunction) {
         self.combine = combine
         latest1 = s1.latest()
         latest2 = s2.latest()
@@ -90,10 +90,10 @@ class Combine3<Source1: SignalType, Source2: SignalType, Source3: SignalType, Co
     }
     
     override var latestValue: LatestValue<CombinedType> {
-        guard let t1 = latest1.latestValue.get, t2 = latest2.latestValue.get, t3 = latest3.latestValue.get else {
-            return .None
+        guard let t1 = latest1.latestValue.get, let t2 = latest2.latestValue.get, let t3 = latest3.latestValue.get else {
+            return .none
         }
-        return .Computed({ self.combine(t1, t2, t3) })
+        return .computed({ self.combine(t1, t2, t3) })
     }
 }
 
@@ -106,7 +106,7 @@ class Combine4<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     let latest3: Signal<Source3.ValueType>
     let latest4: Signal<Source4.ValueType>
     
-    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, combine: CombineFunction) {
+    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, combine: @escaping CombineFunction) {
         self.combine = combine
         latest1 = s1.latest()
         latest2 = s2.latest()
@@ -120,10 +120,10 @@ class Combine4<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     }
     
     override var latestValue: LatestValue<CombinedType> {
-        guard let t1 = latest1.latestValue.get, t2 = latest2.latestValue.get, t3 = latest3.latestValue.get, t4 = latest4.latestValue.get else {
-            return .None
+        guard let t1 = latest1.latestValue.get, let t2 = latest2.latestValue.get, let t3 = latest3.latestValue.get, let t4 = latest4.latestValue.get else {
+            return .none
         }
-        return .Computed({ self.combine(t1, t2, t3, t4) })
+        return .computed({ self.combine(t1, t2, t3, t4) })
     }
 }
 
@@ -137,7 +137,7 @@ class Combine5<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     let latest4: Signal<Source4.ValueType>
     let latest5: Signal<Source5.ValueType>
     
-    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, combine: CombineFunction) {
+    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, combine: @escaping CombineFunction) {
         self.combine = combine
         latest1 = s1.latest()
         latest2 = s2.latest()
@@ -153,10 +153,10 @@ class Combine5<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     }
     
     override var latestValue: LatestValue<CombinedType> {
-        guard let t1 = latest1.latestValue.get, t2 = latest2.latestValue.get, t3 = latest3.latestValue.get, t4 = latest4.latestValue.get, t5 = latest5.latestValue.get else {
-            return .None
+        guard let t1 = latest1.latestValue.get, let t2 = latest2.latestValue.get, let t3 = latest3.latestValue.get, let t4 = latest4.latestValue.get, let t5 = latest5.latestValue.get else {
+            return .none
         }
-        return .Computed({ self.combine(t1, t2, t3, t4, t5) })
+        return .computed({ self.combine(t1, t2, t3, t4, t5) })
     }
 }
 
@@ -170,7 +170,7 @@ class Combine6<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     let latest5: Signal<Source5.ValueType>
     let latest6: Signal<Source6.ValueType>
     
-    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, _ s6: Source6, combine: CombineFunction) {
+    init(_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, _ s6: Source6, combine: @escaping CombineFunction) {
         self.combine = combine
         latest1 = s1.latest()
         latest2 = s2.latest()
@@ -188,39 +188,39 @@ class Combine6<Source1: SignalType, Source2: SignalType, Source3: SignalType, So
     }
     
     override var latestValue: LatestValue<CombinedType> {
-        guard let t1 = latest1.latestValue.get, t2 = latest2.latestValue.get, t3 = latest3.latestValue.get, t4 = latest4.latestValue.get, t5 = latest5.latestValue.get, t6 = latest6.latestValue.get else {
-            return .None
+        guard let t1 = latest1.latestValue.get, let t2 = latest2.latestValue.get, let t3 = latest3.latestValue.get, let t4 = latest4.latestValue.get, let t5 = latest5.latestValue.get, let t6 = latest6.latestValue.get else {
+            return .none
         }
-        return .Computed({ self.combine(t1, t2, t3, t4, t5, t6) })
+        return .computed({ self.combine(t1, t2, t3, t4, t5, t6) })
     }
 }
 
 public func combine<Source1: SignalType, Source2: SignalType, CombinedType>
-    (s1: Source1, _ s2: Source2,
-    combine: (Source1.ValueType, Source2.ValueType) -> CombinedType) -> Signal<CombinedType> {
+    (_ s1: Source1, _ s2: Source2,
+    combine: @escaping (Source1.ValueType, Source2.ValueType) -> CombinedType) -> Signal<CombinedType> {
         return Combine2(s1, s2, combine: combine)
 }
 
 public func combine<Source1: SignalType, Source2: SignalType, Source3: SignalType, CombinedType>
-    (s1: Source1, _ s2: Source2, _ s3: Source3,
-    combine: (Source1.ValueType, Source2.ValueType, Source3.ValueType) -> CombinedType) -> Signal<CombinedType> {
+    (_ s1: Source1, _ s2: Source2, _ s3: Source3,
+    combine: @escaping (Source1.ValueType, Source2.ValueType, Source3.ValueType) -> CombinedType) -> Signal<CombinedType> {
         return Combine3(s1, s2, s3, combine: combine)
 }
 
 public func combine<Source1: SignalType, Source2: SignalType, Source3: SignalType, Source4: SignalType, CombinedType>
-    (s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4,
-    combine: (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType) -> CombinedType) -> Signal<CombinedType> {
+    (_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4,
+    combine: @escaping (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType) -> CombinedType) -> Signal<CombinedType> {
         return Combine4(s1, s2, s3, s4, combine: combine)
 }
 
 public func combine<Source1: SignalType, Source2: SignalType, Source3: SignalType, Source4: SignalType, Source5: SignalType, CombinedType>
-    (s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5,
-    combine: (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType, Source5.ValueType) -> CombinedType) -> Signal<CombinedType> {
+    (_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5,
+    combine: @escaping (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType, Source5.ValueType) -> CombinedType) -> Signal<CombinedType> {
         return Combine5(s1, s2, s3, s4, s5, combine: combine)
 }
 
 public func combine<Source1: SignalType, Source2: SignalType, Source3: SignalType, Source4: SignalType, Source5: SignalType, Source6: SignalType, CombinedType>
-    (s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, _ s6: Source6,
-    combine: (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType, Source5.ValueType, Source6.ValueType) -> CombinedType) -> Signal<CombinedType> {
+    (_ s1: Source1, _ s2: Source2, _ s3: Source3, _ s4: Source4, _ s5: Source5, _ s6: Source6,
+    combine: @escaping (Source1.ValueType, Source2.ValueType, Source3.ValueType, Source4.ValueType, Source5.ValueType, Source6.ValueType) -> CombinedType) -> Signal<CombinedType> {
         return Combine6(s1, s2, s3, s4, s5, s6, combine: combine)
 }

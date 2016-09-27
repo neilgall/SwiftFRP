@@ -430,12 +430,12 @@ class FRPTests: XCTestCase {
         let e = s.event()
         let c = Capture(e)
         
-        XCTAssertEqual(s.latestValue.get, .Some(0))
+        XCTAssertEqual(s.latestValue.get, .some(0))
         XCTAssertNil(e.latestValue.get)
         XCTAssertEqual(c.vals, [])
         
         s.value = 5
-        XCTAssertEqual(s.latestValue.get, .Some(5))
+        XCTAssertEqual(s.latestValue.get, .some(5))
         XCTAssertNil(e.latestValue.get)
         XCTAssertEqual(c.vals, [5])
     }

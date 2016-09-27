@@ -8,11 +8,21 @@
 
 import Foundation
 
+public protocol BooleanType {
+    var boolValue: Bool { get }
+}
+
+extension Bool: BooleanType {
+    public var boolValue: Bool {
+        return self
+    }
+}
+
 // Gate is a form of controllable filter. Values from the source signal are not
 // propagated when the gate is "closed" (false). When the gate opens, the last
 // value frm the source signal is then propagated.
 //
-class Gate<Source: SignalType, Gate: SignalType where Gate.ValueType: BooleanType> : Signal<Source.ValueType> {
+class Gate<Source: SignalType, Gate: SignalType> : Signal<Source.ValueType> where Gate.ValueType: BooleanType {
     let gateLatest: Signal<Gate.ValueType>
     var valueLatest: Source.ValueType?
     var receivers: [ReceiverType] = []
@@ -24,22 +34,22 @@ class Gate<Source: SignalType, Gate: SignalType where Gate.ValueType: BooleanTyp
         
         receivers.append(Receiver(source) { [weak self] in
             switch $0 {
-            case .Begin:
+            case .begin:
                 self?.beginTransaction()
                 self?.valueLatest = nil
-            case .End(let value):
+            case .end(let value):
                 self?.valueLatest = value
                 self?.endTransaction()
-            case .Cancel:
+            case .cancel:
                 self?.endTransaction()
             }
         })
         
         receivers.append(Receiver(gateLatest) { [weak self] in
             switch $0 {
-            case .Begin:
+            case .begin:
                 self?.beginTransaction()
-            case .End, .Cancel:
+            case .end, .cancel:
                 self?.endTransaction()
             }
         })
@@ -47,7 +57,7 @@ class Gate<Source: SignalType, Gate: SignalType where Gate.ValueType: BooleanTyp
 
     private func beginTransaction() {
         if transactionCount == 0 {
-            pushTransaction(.Begin)
+            pushTransaction(.begin)
         }
         transactionCount += 1
     }
@@ -55,11 +65,11 @@ class Gate<Source: SignalType, Gate: SignalType where Gate.ValueType: BooleanTyp
     private func endTransaction() {
         transactionCount -= 1
         if transactionCount == 0 {
-            if let value = valueLatest, gate = gateLatest.latestValue.get where gate.boolValue {
-                pushTransaction(.End(value))
+            if let value = valueLatest, let gate = gateLatest.latestValue.get , gate.boolValue {
+                pushTransaction(.end(value))
                 valueLatest = nil
             } else {
-                pushTransaction(.Cancel)
+                pushTransaction(.cancel)
             }
         }
     }
@@ -69,47 +79,47 @@ extension Signal where Value: BooleanType, Value: Equatable {
 
     // An output on boolean signals which only fire when the value goes from false to true
     //
-    public func onRisingEdge(closure: Void -> Void) -> ReceiverType {
+    public func onRisingEdge(_ closure: @escaping (Void) -> Void) -> ReceiverType {
         return onChange().filter({ $0.boolValue == true }) --> { _ in closure() }
     }
     
     // An output on boolean signals which only fire when the value goes from true to false
     //
-    public func onFallingEdge(closure: Void -> Void) -> ReceiverType {
+    public func onFallingEdge(_ closure: @escaping (Void) -> Void) -> ReceiverType {
         return onChange().filter({ $0.boolValue == false }) --> { _ in closure() }
     }
     
     // Convenience Gate creation
     //
-    public func gate<SourceType>(source: Signal<SourceType>) -> Signal<SourceType> {
+    public func gate<SourceType>(_ source: Signal<SourceType>) -> Signal<SourceType> {
         return Gate(source, gate: self.map({ $0.boolValue }))
     }
 }
 
 // Invert the sense of a boolean signal
 //
-public func not<S: SignalType where S.ValueType: BooleanType>(signal: S) -> Signal<Bool> {
+public func not<S: SignalType>(_ signal: S) -> Signal<Bool> where S.ValueType: BooleanType {
     return signal.map { b in !b.boolValue }
 }
 
 // Given a signal where the value type is optional, create a signal that indicates whether
 // the source value is nil
 //
-public func isNil<S: SignalType, T where S.ValueType == T?>(signal: S) -> Signal<Bool> {
+public func isNil<S: SignalType, T>(_ signal: S) -> Signal<Bool> where S.ValueType == T? {
     return signal.map { $0 == nil }
 }
 
 // Logical AND of boolean signals. Note that there is no shortcutting as this is based on
 // Combiners, so both sides are evaluated on each change.
 //
-public func && <LHS: SignalType, RHS: SignalType where LHS.ValueType: BooleanType, RHS.ValueType: BooleanType>(lhs: LHS, rhs: RHS) -> Signal<Bool> {
+public func && <LHS: SignalType, RHS: SignalType>(lhs: LHS, rhs: RHS) -> Signal<Bool> where LHS.ValueType: BooleanType, RHS.ValueType: BooleanType {
     return combine(lhs, rhs) { $0.boolValue && $1.boolValue }
 }
 
 // Logical OR of boolean signals. Note that there is no shortcutting as this is based on
 // Combiners, so both sides are evaluated on each change.
 //
-public func || <LHS: SignalType, RHS: SignalType where LHS.ValueType: BooleanType, RHS.ValueType: BooleanType>(lhs: LHS, rhs: RHS) -> Signal<Bool> {
+public func || <LHS: SignalType, RHS: SignalType>(lhs: LHS, rhs: RHS) -> Signal<Bool> where LHS.ValueType: BooleanType, RHS.ValueType: BooleanType {
     return combine(lhs, rhs) { $0.boolValue || $1.boolValue }
 }
 

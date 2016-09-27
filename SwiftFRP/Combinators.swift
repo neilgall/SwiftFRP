@@ -24,7 +24,7 @@ public class Const<Value> : Signal<Value> {
     }
     
     override public var latestValue: LatestValue<Value> {
-        return .Stored(value)
+        return .stored(value)
     }
 }
 
@@ -47,11 +47,11 @@ class Event<Source: SignalType> : Signal<Source.ValueType> {
 class Filter<Source: SignalType> : Signal<Source.ValueType> {
     private var receiver: ReceiverType!
     
-    init(_ source: Source, _ predicate: Source.ValueType -> Bool) {
+    init(_ source: Source, _ predicate: @escaping (Source.ValueType) -> Bool) {
         super.init()
         receiver = Receiver(source) { [weak self] transaction in
-            if case .End(let value) = transaction where !predicate(value) {
-                self?.pushTransaction(.Cancel)
+            if case .end(let value) = transaction , !predicate(value) {
+                self?.pushTransaction(.cancel)
             } else {
                 self?.pushTransaction(transaction)
             }
@@ -64,10 +64,10 @@ class Filter<Source: SignalType> : Signal<Source.ValueType> {
 //
 class Mapped<Source: SignalType, MappedType> : Signal<MappedType> {
     private let source: Source
-    private let transform: Source.ValueType -> MappedType
+    private let transform: (Source.ValueType) -> MappedType
     private var receiver: ReceiverType!
     
-    init(_ source: Source, _ transform: Source.ValueType -> MappedType) {
+    init(_ source: Source, _ transform: @escaping (Source.ValueType) -> MappedType) {
         self.source = source
         self.transform = transform
         
@@ -75,24 +75,24 @@ class Mapped<Source: SignalType, MappedType> : Signal<MappedType> {
         
         self.receiver = Receiver(source) { [weak self] transaction in
             switch transaction {
-            case .Begin:
-                self?.pushTransaction(.Begin)
-            case .End(let sourceValue):
-                self?.pushTransaction(.End(transform(sourceValue)))
-            case .Cancel:
-                self?.pushTransaction(.Cancel)
+            case .begin:
+                self?.pushTransaction(.begin)
+            case .end(let sourceValue):
+                self?.pushTransaction(.end(transform(sourceValue)))
+            case .cancel:
+                self?.pushTransaction(.cancel)
             }
         }
     }
     
     override var latestValue: LatestValue<MappedType> {
         switch source.latestValue {
-        case .None:
-            return .None
-        case .Stored(let sourceValue):
-            return .Computed({ self.transform(sourceValue) })
-        case .Computed(let getSourceValue):
-            return .Computed({ self.transform(getSourceValue()) })
+        case .none:
+            return .none
+        case .stored(let sourceValue):
+            return .computed({ self.transform(sourceValue) })
+        case .computed(let getSourceValue):
+            return .computed({ self.transform(getSourceValue()) })
         }
     }
 }
@@ -148,7 +148,7 @@ public class Latest<Source: SignalType>: Signal<Source.ValueType> {
         super.init()
 
         self.receiver = Receiver(source) { [weak self] transaction in
-            if case .End(let value) = transaction {
+            if case .end(let value) = transaction {
                 self?.value = value
             }
             self?.pushTransaction(transaction)
@@ -157,9 +157,9 @@ public class Latest<Source: SignalType>: Signal<Source.ValueType> {
     
     override public var latestValue: LatestValue<Source.ValueType> {
         if let value = value {
-            return .Stored(value)
+            return .stored(value)
         } else {
-            return .None
+            return .none
         }
     }
 }
@@ -168,7 +168,7 @@ public class Latest<Source: SignalType>: Signal<Source.ValueType> {
 // equal to the previous value. Upstream notifications with the same value are cancelled. OnChange
 // is consequently also a Latest since the previous value must be stored.
 //
-class OnChange<Source: SignalType where Source.ValueType: Equatable> : Signal<Source.ValueType> {
+class OnChange<Source: SignalType> : Signal<Source.ValueType> where Source.ValueType: Equatable {
     private var receiver: ReceiverType!
     private var value: Source.ValueType?
     
@@ -176,9 +176,9 @@ class OnChange<Source: SignalType where Source.ValueType: Equatable> : Signal<So
         super.init()
         value = source.latestValue.get
         receiver = Receiver(source) { [weak self] transaction in
-            if case .End(let newValue) = transaction {
+            if case .end(let newValue) = transaction {
                 if newValue == self?.value {
-                    self?.pushTransaction(.Cancel)
+                    self?.pushTransaction(.cancel)
                 } else {
                     self?.value = newValue
                     self?.pushTransaction(transaction)
@@ -191,33 +191,33 @@ class OnChange<Source: SignalType where Source.ValueType: Equatable> : Signal<So
     
     override var latestValue: LatestValue<Source.ValueType> {
         guard let value = value else {
-            return .None
+            return .none
         }
-        return .Stored(value)
+        return .stored(value)
     }
 }
 
 // Syntactical sugar for creating an Output. With the core of the signal network purely
 // functional, it is useful to have distinctive syntax for the imperative inputs and outputs.
 //
-infix operator --> { associativity right precedence 100 }
+infix operator -->: AssignmentPrecedence
 
-public func --> <Source: SignalType> (source: Source, closure: Source.ValueType -> Void) -> ReceiverType {
+public func --> <Source: SignalType> (source: Source, closure: @escaping (Source.ValueType) -> Void) -> ReceiverType {
     return Output(source, closure)
 }
 
 // Syntactical sugar for assigning a value to an input
 //
-infix operator <-- { associativity left precedence 100 }
+infix operator <--: AssignmentPrecedence
 
-public func <-- <Input: InputType, ValueType where Input.ValueType == ValueType> (input: Input, value: ValueType) {
+public func <-- <Input: InputType, ValueType> (input: Input, value: ValueType) where Input.ValueType == ValueType {
     input.value = value
 }
 
 // Helper methods for creating derived signals
 //
 extension SignalType {
-    public func willOutput(closure: Void -> Void) -> WillOutput<Self> {
+    public func willOutput(_ closure: @escaping (Void) -> Void) -> WillOutput<Self> {
         return WillOutput(self, closure)
     }
     
@@ -231,18 +231,18 @@ extension SignalType {
     
     public func latest() -> Signal<ValueType> {
         // if the source signal can already provide a stored value, there's no point wrapping it in a Latest
-        if let signal = self as? Signal<ValueType>, case .Stored = signal.latestValue {
+        if let signal = self as? Signal<ValueType>, case .stored = signal.latestValue {
             return signal
         }
         
         return Latest(self)
     }
     
-    public func map<TargetType>(transform: ValueType -> TargetType) -> Signal<TargetType> {
+    public func map<TargetType>(_ transform: @escaping (ValueType) -> TargetType) -> Signal<TargetType> {
         return Mapped(self, transform)
     }
     
-    public func filter(predicate: ValueType -> Bool) -> Signal<ValueType> {
+    public func filter(_ predicate: @escaping (ValueType) -> Bool) -> Signal<ValueType> {
         return Filter(self, predicate)
     }
 }
@@ -253,10 +253,10 @@ extension SignalType where ValueType: Equatable {
     }
 }
 
-public func union<Source: SignalType>(sources: Source...) -> Signal<Source.ValueType> {
+public func union<Source: SignalType>(_ sources: Source...) -> Signal<Source.ValueType> {
     return Union(sources)
 }
 
-public func notNil<S: SignalType, T where S.ValueType == T?>(signal: S) -> Signal<T> {
+public func notNil<S: SignalType, T>(_ signal: S) -> Signal<T> where S.ValueType == T? {
     return signal.filter({ $0 != nil }).map({ $0! })
 }

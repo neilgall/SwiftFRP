@@ -21,8 +21,6 @@
 		48E759821D99B03300758F3F /* SwiftFRPJoinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E759801D99B03300758F3F /* SwiftFRPJoinTests.swift */; };
 		48E759831D99B03300758F3F /* SwiftFRPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E759811D99B03300758F3F /* SwiftFRPTests.swift */; };
 		48E7599B1D99B05D00758F3F /* SwiftCheck.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48E759921D99B04900758F3F /* SwiftCheck.framework */; };
-		48E759A41D99B2AA00758F3F /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 48E759A21D99B2AA00758F3F /* LICENSE */; };
-		48E759A51D99B2AA00758F3F /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 48E759A31D99B2AA00758F3F /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -337,7 +335,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48E759A41D99B2AA00758F3F /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,7 +354,6 @@
 			files = (
 				48E7597A1D99B01F00758F3F /* KeyedSet.swift in Sources */,
 				48E759781D99B01F00758F3F /* Combine.swift in Sources */,
-				48E759A51D99B2AA00758F3F /* README.md in Sources */,
 				48E759791D99B01F00758F3F /* Join.swift in Sources */,
 				48E759761D99B01F00758F3F /* Booleans.swift in Sources */,
 				48E7597C1D99B01F00758F3F /* Sequences.swift in Sources */,
@@ -508,7 +504,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -527,7 +523,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = uk.neilgall.SwiftFRP;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -542,7 +538,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftFRPTests/SwiftFRPTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -556,7 +552,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = uk.neilgall.SwiftFRPTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SwiftFRPTests/SwiftFRPTests-Bridging-Header.h";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
