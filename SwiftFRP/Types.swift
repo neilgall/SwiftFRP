@@ -16,9 +16,9 @@ public protocol ReceiverType {}
 // sent, followed by an End with a new Value or a Cancel.
 //
 public enum Transaction<ValueType> {
-    case Begin
-    case End(ValueType)
-    case Cancel
+    case begin
+    case end(ValueType)
+    case cancel
 }
 
 // Some Signals can supply their latest value, which is always wrapped in this type.
@@ -27,25 +27,25 @@ public enum Transaction<ValueType> {
 // The value is therefore supplied lazily. Stored supplies the value directly.
 //
 public enum LatestValue<Value> {
-    case None
-    case Computed(Void -> Value)
-    case Stored(Value)
+    case none
+    case computed((Void) -> Value)
+    case stored(Value)
     
     public var has: Bool {
         switch self {
-        case .None: return false
-        case .Stored: return true
-        case .Computed: return true
+        case .none: return false
+        case .stored: return true
+        case .computed: return true
         }
     }
     
     public var get: Value? {
         switch self {
-        case .None:
+        case .none:
             return nil
-        case .Stored(let value):
+        case .stored(let value):
             return value
-        case .Computed(let getValue):
+        case .computed(let getValue):
             return getValue()
         }
     }
@@ -60,11 +60,11 @@ public protocol SignalType {
     associatedtype ValueType
     associatedtype Observer = Int
     
-    func addObserver(observer: Transaction<ValueType> -> Void) -> Observer
-    func removeObserver(id: Observer)
+    func addObserver(_ observer: @escaping (Transaction<ValueType>) -> Void) -> Observer
+    func removeObserver(_ id: Observer)
     
-    func pushTransaction(transaction: Transaction<ValueType>)
-    func pushValue(value: ValueType)
+    func pushTransaction(_ transaction: Transaction<ValueType>)
+    func pushValue(_ value: ValueType)
     
     var latestValue: LatestValue<ValueType> { get }
 }
@@ -82,43 +82,43 @@ public protocol InputType: class {
 public class Signal<Value> : SignalType {
     public typealias ValueType = Value
     
-    private var observers = KeyedSet<Transaction<ValueType> -> Void>()
+    private var observers = KeyedSet<(Transaction<ValueType>) -> Void>()
     
     public init() {
     }
     
-    public func addObserver(observer: Transaction<ValueType> -> Void) -> Int {
+    open func addObserver(_ observer: @escaping (Transaction<ValueType>) -> Void) -> Int {
         switch latestValue {
-        case .Stored(let value):
-            observer(.Begin)
-            observer(.End(value))
-        case .Computed(let getValue):
-            observer(.Begin)
-            observer(.End(getValue()))
-        case .None:
+        case .stored(let value):
+            observer(.begin)
+            observer(.end(value))
+        case .computed(let getValue):
+            observer(.begin)
+            observer(.end(getValue()))
+        case .none:
             break
         }
         return observers.add(observer)
     }
     
-    public func removeObserver(id: Int) {
+    open func removeObserver(_ id: Int) {
         observers.remove(id)
     }
     
     // Push
-    public func pushValue(value: ValueType) {
-        pushTransaction(.Begin)
-        pushTransaction(.End(value))
+    open func pushValue(_ value: ValueType) {
+        pushTransaction(.begin)
+        pushTransaction(.end(value))
     }
     
-    public func pushTransaction(transaction: Transaction<ValueType>) {
+    open func pushTransaction(_ transaction: Transaction<ValueType>) {
         for observer in observers {
             observer(transaction)
         }
     }
     
-    public var latestValue: LatestValue<Value> {
-        return .None
+    open var latestValue: LatestValue<Value> {
+        return .none
     }
 }
 
@@ -127,7 +127,7 @@ public class Signal<Value> : SignalType {
 public class Input<Value>: Signal<Value>, InputType {
     public typealias ValueType = Value
     
-    public var value: Value {
+    open var value: Value {
         willSet {
             assert(!inTransaction)
         }
@@ -138,8 +138,8 @@ public class Input<Value>: Signal<Value>, InputType {
         }
     }
 
-    override public var latestValue: LatestValue<Value> {
-        return .Stored(value)
+    override open var latestValue: LatestValue<Value> {
+        return .stored(value)
     }
     
     private var inTransaction: Bool = false
@@ -148,7 +148,7 @@ public class Input<Value>: Signal<Value>, InputType {
         value = initial
     }
     
-    public func modify(transform: Value -> Value) {
+    open func modify(_ transform: (Value) -> Value) {
         value = transform(value)
     }
 }
@@ -159,12 +159,12 @@ public class Input<Value>: Signal<Value>, InputType {
 public class ComputedSignal<Value>: Signal<Value> {
     private let compute: () -> Value
 
-    public init(_ compute: () -> Value) {
+    public init(_ compute: @escaping () -> Value) {
         self.compute = compute
     }
     
-    override public var latestValue: LatestValue<Value> {
-        return .Computed(compute)
+    override open var latestValue: LatestValue<Value> {
+        return .computed(compute)
     }
 }
 
@@ -177,7 +177,7 @@ class Receiver<Source: SignalType>: ReceiverType {
     private let source: Source
     private let observer: Source.Observer
     
-    init(_ source: Source, _ closure: Transaction<Source.ValueType> -> Void) {
+    init(_ source: Source, _ closure: @escaping (Transaction<Source.ValueType>) -> Void) {
         self.source = source
         self.observer = source.addObserver(closure)
     }
@@ -191,9 +191,9 @@ class Receiver<Source: SignalType>: ReceiverType {
 // transaction, unwrapping the value and passing it to a closure.
 //
 public class Output<Source: SignalType>: Receiver<Source> {
-    public init(_ source: Source, _ closure: Source.ValueType -> Void) {
+    public init(_ source: Source, _ closure: @escaping (Source.ValueType) -> Void) {
         super.init(source) { transaction in
-            if case .End(let value) = transaction {
+            if case .end(let value) = transaction {
                 closure(value)
             }
         }
@@ -203,9 +203,9 @@ public class Output<Source: SignalType>: Receiver<Source> {
 // A WillOutput is like an Output but responds to the Begin phase of a signal change.
 //
 public class WillOutput<Source: SignalType>: Receiver<Source> {
-    public init(_ source: Source, _ closure: Void -> Void) {
+    public init(_ source: Source, _ closure: @escaping (Void) -> Void) {
         super.init(source) { transaction in
-            if case .Begin = transaction {
+            if case .begin = transaction {
                 closure()
             }
         }

@@ -10,15 +10,15 @@ import Foundation
 
 
 class Throttle<ValueType> : Signal<ValueType> {
-    private let timer: dispatch_source_t
-    private let minimumInterval: NSTimeInterval
+    private let timer: DispatchSourceTimer
+    private let minimumInterval: TimeInterval
     private var lastPushTimestamp: CFAbsoluteTime = 0
     private var receiver: ReceiverType!
     private var transactionCount: Int = 0
     private var timerActive: Bool = false
     
-    init(_ source: Signal<ValueType>, minimumInterval: NSTimeInterval, queue: dispatch_queue_t) {
-        self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue)
+    init(_ source: Signal<ValueType>, minimumInterval: TimeInterval, queue: DispatchQueue) {
+        self.timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: UInt(0)), queue: queue)
         self.minimumInterval = minimumInterval
         
         super.init()
@@ -28,18 +28,18 @@ class Throttle<ValueType> : Signal<ValueType> {
         }
     }
     
-    private func transact(transaction: Transaction<ValueType>) {
+    private func transact(_ transaction: Transaction<ValueType>) {
         switch transaction {
-        case .Begin:
+        case .begin:
             if transactionCount == 0 {
                 pushTransaction(transaction)
             }
             transactionCount += 1
             
-        case .End:
-            dispatch_suspend(self.timer)
+        case .end:
+            self.timer.suspend()
             if timerActive {
-                endTransaction(.Cancel)
+                endTransaction(.cancel)
                 timerActive = false
             }
             
@@ -52,47 +52,39 @@ class Throttle<ValueType> : Signal<ValueType> {
                 deferEndTransaction(transaction)
             }
             
-        case .Cancel:
+        case .cancel:
             endTransaction(transaction)
         }
     }
     
     deinit {
-        dispatch_source_cancel(timer)
+        timer.cancel()
     }
     
-    private func endTransaction(transaction: Transaction<ValueType>) {
+    private func endTransaction(_ transaction: Transaction<ValueType>) {
         transactionCount -= 1
         if transactionCount == 0 {
             pushTransaction(transaction)
         }
     }
     
-    private func deferEndTransaction(transaction: Transaction<ValueType>) {
-        dispatch_source_set_event_handler(timer) { [weak self] in
+    private func deferEndTransaction(_ transaction: Transaction<ValueType>) {
+        timer.setEventHandler { [weak self] in
             self?.endTransaction(transaction)
             self?.lastPushTimestamp = CFAbsoluteTimeGetCurrent()
             self?.timerActive = false
         }
         
-        dispatch_source_set_timer(timer,
-            DISPATCH_TIME_NOW,
-            nanosecondsFromSeconds(minimumInterval),
-            nanosecondsFromSeconds(minimumInterval * 0.2))
+        timer.scheduleOneshot(deadline: DispatchTime.now() + minimumInterval)
         
         timerActive = true
-        dispatch_resume(timer)
+        timer.resume()
     }
 }
 
 
 extension Signal {
-    public func throttle(minimumInterval: NSTimeInterval, queue: dispatch_queue_t) -> Signal<ValueType> {
+    public func throttle(_ minimumInterval: TimeInterval, queue: DispatchQueue) -> Signal<ValueType> {
         return Throttle(self, minimumInterval: minimumInterval, queue: queue)
     }
-}
-
-private func nanosecondsFromSeconds(seconds: NSTimeInterval) -> UInt64 {
-    let nanoseconds = seconds * Double(NSEC_PER_SEC)
-    return UInt64(nanoseconds)
 }

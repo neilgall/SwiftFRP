@@ -17,10 +17,10 @@ class JoinedSignal<Value>: Signal<Value> {
     private var innerReceiver: ReceiverType?
     private var innerSignal: Signal<Value>?
     
-    init<Outer: SignalType, Inner: SignalType where Outer.ValueType == Inner, Inner.ValueType == Value>(_ source: Outer) {
+    init<Outer: SignalType, Inner: SignalType>(_ source: Outer) where Outer.ValueType == Inner, Inner.ValueType == Value {
         super.init()
         outerReceiver = Receiver(source) { [weak self] transaction in
-            if case .End(let inner) = transaction {
+            if case .end(let inner) = transaction {
                 self?.innerSignal = inner.signal()
                 self?.innerReceiver = Receiver(inner) { [weak self] transaction in
                     self?.pushTransaction(transaction)
@@ -31,7 +31,7 @@ class JoinedSignal<Value>: Signal<Value> {
     
     override var latestValue: LatestValue<Value> {
         guard let innerSignal = innerSignal else {
-            return .None
+            return .none
         }
         return innerSignal.latestValue
     }

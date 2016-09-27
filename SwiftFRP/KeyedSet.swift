@@ -8,25 +8,25 @@
 
 import Foundation
 
-public struct KeyedSet<Element>: SequenceType {
+public struct KeyedSet<Element>: Sequence {
     public typealias Key = Int
-    public typealias Generator = LazyMapCollection<[Key: Element], Element>.Generator
+    public typealias Iterator = LazyMapCollection<[Key: Element], Element>.Iterator
 
     private var items: [Key: Element] = [:]
     private var nextItemKey: Key = 0
     
-    public mutating func add(element: Element) -> Key {
+    public mutating func add(_ element: Element) -> Key {
         let key = newItemKey()
         items[key] = element
         return key
     }
     
-    public mutating func remove(key: Key) {
-        items.removeValueForKey(key)
+    public mutating func remove(_ key: Key) {
+        items.removeValue(forKey: key)
     }
     
-    public func generate() -> Generator {
-        return items.values.generate()
+    public func makeIterator() -> Iterator {
+        return items.values.makeIterator()
     }
     
     private mutating func newItemKey() -> Key {

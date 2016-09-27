@@ -16,7 +16,7 @@ private class Capture<T> {
     
     init(_ o: Signal<T>, previous: Capture<T>?) {
         if let previous = previous {
-            vals.appendContentsOf(previous.vals)
+            vals.append(contentsOf: previous.vals)
         }
         self.receivers.append(o --> {
             self.vals.append($0)
